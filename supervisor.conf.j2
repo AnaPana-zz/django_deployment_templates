@@ -1,0 +1,9 @@
+[program:{{ app_name }}]
+command = {{ app_dir }}/run_uwsgi.sh
+directory={{ app_dir }}
+startsecs=5
+autorestart=true
+stopsignal=TERM
+stdout_logfile = {{ supervisor_log_dir }}/{{ app_name }}.log
+redirect_stderr = true
+environment=LANG="en_US.UTF-8",LC_ALL="en_US.UTF-8"

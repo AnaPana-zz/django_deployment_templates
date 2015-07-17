@@ -1,0 +1,45 @@
+  upstream {{ app_name }}_app_server {
+    # for UNIX domain socket setups:
+    server unix:///var/run/{{ app_name }}.sock fail_timeout=0;
+  }
+
+  server {
+    listen 80 default;
+    client_max_body_size 4M;
+
+    # https://stackoverflow.com/questions/15414810/whats-the-difference-of-host-and-http-host-in-nginx
+
+    # $http_host equals always the HTTP_HOST request header.
+    # $host equals $http_host, lowercase and without the port number (if present), 
+    # except when HTTP_HOST is absent or is an empty value. In that case, $host 
+    # equals the value of the server_name directive of the server which processed the request.
+
+
+    server_name openstack.django;
+
+    # ~2 seconds is often enough for most folks to parse HTML/CSS and
+    # retrieve needed images/icons/frames, connections are cheap in
+    # nginx so increasing this is generally safe...
+    keepalive_timeout 5;
+
+    # path for static files
+    root {{ app_dir }}/;
+
+    location /static/ {
+        alias {{ app_dir }}/static/;
+    }
+
+    location / {
+        include /etc/nginx/uwsgi_params;
+        uwsgi_pass {{ app_name }}_app_server;
+    }
+
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+  }

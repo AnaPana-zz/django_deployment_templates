@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+APPDIR={{ app_dir }}
+VIRTUALENVDIR={{ venv_dir }}
+LOGDIR={{ uwsgi_log_dir }}
+LOGFILE=${LOGDIR}/{{ app_name }}.log
+SOCKFILE=/var/run/{{ app_name }}.sock
+NUM_WORKERS=$(( 2 * $(nproc) + 1 ))
+
+source ${VIRTUALENVDIR}/bin/activate
+test -d ${LOGDIR} || mkdir -p ${LOGDIR}
+exec ${VIRTUALENVDIR}/bin/uwsgi --http-socket ${SOCKFILE}  --wsgi-file {{ app_name }}/wsgi.py --chdir ${APPDIR} --env SECRET_KEY=${SECRET_KEY} --master --processes ${NUM_WORKERS} --logto ${LOGFILE} 2>>${LOGFILE}
